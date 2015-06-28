@@ -31,6 +31,21 @@
 			}
 		}
 		
+		function simpleSend($regid, $message, $title = "") {
+			$payload = array(
+                    		"aps" => array("badge" => "auto", "alert" => $message, "sound" => "beep.caf"),
+                    		"title" => $title,
+                    		"message" => $message,
+                    		"id" => time()
+                	);
+                	if ($this->platform == "android") {
+                		$this->_gcmSendPush($regid, $payload);
+                	}
+                	else {
+                		$this->_apnsSendPush($regid, $payload);
+                	}
+		}
+		
 		function _gcmSendPush($regids, $payload) {
 			if ($this->gcmKey == "") {
 				throw new Exception("GCM API Key not set. Use setGcmKey(key) first.");

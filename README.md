@@ -58,6 +58,10 @@ Then you call sendMessage() from within your instance of the pushNotification cl
 $push->sendMessage($REGID, $payload);
 ```
 
+REMEMBER: If sending to GCM, $REGID needs to be an array of registration IDs. This is useful to sending bulk pushes.
+          APNS does not offer this same functionality.
+
+
 ## simpleSend function
 The `simpleSend()` function is the quickest and easiest way to send a push notification. It generates the payload for you, without any additional data.
 
@@ -65,5 +69,38 @@ The `simpleSend()` function is the quickest and easiest way to send a push notif
 $push->simpleSend($REGID, "Message contents", "Message title (if applicable)");
 ```
 
+REMEMBER: If sending to GCM, $REGID needs to be an array of registration IDs. This is useful to sending bulk pushes.
+          APNS does not offer this same functionality.
+
 ## Return values
-As unprofessional as this may be. I'm fairly sure `sendMessage()` returns a value(s) from the provider response, but at the moment I can't remember what it is. So you might need to tinker here.
+`sendMessage()` returns a JSON decoded array response from the GCM server, but not from Apple/APNS server.
+
+The latest reference from Google is here: https://developers.google.com/cloud-messaging/server-ref#table3
+
+## Advanced API
+This part of the API can be used to change the instance of the pushNotification class after it has been created.
+
+### setPlatform function
+Changes the current platform
+```php
+//Change to iOS
+$push->setPlatform("ios", "/path/to/pem/cert");
+
+//Change to Android
+$push->setPlatform("android", "GCM Key");
+```
+
+### setGcmKey function
+For whatever reason, changes the already set GCM key. Has no effect is platform type is iOS.
+
+You do not need to call this after `setPlatform()` if you are changing to Android. It is already done with that call.
+
+```php
+$push->setGcmKey("GCM Key");
+```
+
+### _gcmSendPush function
+This is an internal function. This function works the same as `sendMessage()` except it targets only GCM instead of looking to see what platform is set. This will fail if the GCM key is not set. 
+
+### _apnsSendPush
+This is an internal function. This function works the same as `sendMessage()` except it targets only APNS instead of looking to see what platform is set. this will fail if the certificate is not set.

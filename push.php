@@ -72,7 +72,7 @@
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 				curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
 				$result = curl_exec($ch);
-				if (curl_errno($ch)) { die("GCM Error: " . curl_error($ch)); }
+				if (curl_errno($ch)) { throw new Exception("GCM Error: " . curl_error($ch)); }
 				curl_close($ch);
 				
 				return json_decode($result, true);
@@ -89,14 +89,12 @@
 				stream_context_set_option($streamContext, "ssl", "local_cert", $cert);
 				$apns = stream_socket_client("ssl://{$this->apnsHost}:{$this->apnsPort}", $error, $errorString, 2, STREAM_CLIENT_CONNECT, $streamContext);
 				if (!$apns) { throw new Exception("Error #{$apns->errno}: {$apns->errostr}"); }
-				else {
-					$payload = json_encode($payload, JSON_FORCE_OBJECT);
-					$apnsMessage = chr(0).chr(0).chr(32).pack('H*', str_replace(" ", "", $regid)).chr(0).chr(strlen($payload)).$payload;
-					fwrite($apns, $apnsMessage);
-				
-					@socket_close($apns);
-					@fclose($apns);
-				}
+				$payload = json_encode($payload, JSON_FORCE_OBJECT);
+				$apnsMessage = chr(0).chr(0).chr(32).pack('H*', str_replace(" ", "", $regid)).chr(0).chr(strlen($payload)).$payload;
+				fwrite($apns, $apnsMessage);
+			
+				@socket_close($apns);
+				@fclose($apns);
 			}
 		}
 	}

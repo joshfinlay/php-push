@@ -88,13 +88,15 @@
 				$streamContext = stream_context_create();
 				stream_context_set_option($streamContext, "ssl", "local_cert", $cert);
 				$apns = stream_socket_client("ssl://{$this->apnsHost}:{$this->apnsPort}", $error, $errorString, 2, STREAM_CLIENT_CONNECT, $streamContext);
-				if (!$apns) { die("Error #{$apns->errno}: {$apns->errostr}"); }
-				$payload = json_encode($payload, JSON_FORCE_OBJECT);
-				$apnsMessage = chr(0).chr(0).chr(32).pack('H*', str_replace(" ", "", $regid)).chr(0).chr(strlen($payload)).$payload;
-				fwrite($apns, $apnsMessage);
+				if (!$apns) { throw new Exception("Error #{$apns->errno}: {$apns->errostr}"); }
+				else {
+					$payload = json_encode($payload, JSON_FORCE_OBJECT);
+					$apnsMessage = chr(0).chr(0).chr(32).pack('H*', str_replace(" ", "", $regid)).chr(0).chr(strlen($payload)).$payload;
+					fwrite($apns, $apnsMessage);
 				
-				@socket_close($apns);
-				@fclose($apns);
+					@socket_close($apns);
+					@fclose($apns);
+				}
 			}
 		}
 	}
